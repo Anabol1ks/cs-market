@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Cookies from 'js-cookie';
 import { 
   Search, 
   ShoppingCart, 
@@ -15,7 +16,37 @@ import {
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn] = useState(false); // TODO: Replace with actual auth state
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // TODO: Replace with actual auth state
+
+  useEffect(() => {
+		const checkAuth = async () => {
+			const accessToken = Cookies.get('access_token')
+
+			if (!accessToken) {
+				setIsLoggedIn(false)
+				return
+			}
+
+			try {
+				const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, {
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				})
+
+				if (response.ok) {
+					setIsLoggedIn(true)
+				} else {
+					setIsLoggedIn(false)
+				}
+			} catch (error) {
+				setIsLoggedIn(false)
+        Cookies.remove('access_token')
+			}
+		}
+
+		checkAuth()
+	}, [])
 
   return (
     <nav className="bg-background border-b border-border">

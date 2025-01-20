@@ -55,6 +55,7 @@ func main() {
 	r.GET("/auth/steam", auth.SteamLoginHandler)
 	r.GET("/auth/steam/callback", auth.SteamCallbackHandler)
 	r.POST("/auth/refresh", auth.RefreshTokenHandler)
+	r.GET("/auth/verify", auth.AuthMiddleware(), auth.VerifyTokenHandler)
 
 	authorized := r.Group("/")
 	{

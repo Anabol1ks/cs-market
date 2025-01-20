@@ -207,3 +207,12 @@ func TokenProv(c *gin.Context) {
 		"user_id": userID,
 	})
 }
+
+func VerifyTokenHandler(c *gin.Context) {
+	userID := c.GetString("user_id")
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Невалидный токен"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"valid": true, "user_id": userID})
+}
