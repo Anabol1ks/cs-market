@@ -11,11 +11,15 @@ import Coockies from 'js-cookie'
 
 export default function AuthPage() {
 	const router = useRouter()
-
+	
+	const steamAuthUrl = `${process.env.NEXT_PUBLIC_API_URL}/auth/steam`
 	const handleSteamLogin = () => {
-		window.location.href = process.env+'/auth/steam'
+		if (steamAuthUrl) {
+      window.location.href = steamAuthUrl; // Использование переменной из .env
+    } else {
+      console.error('Steam authentication URL is not defined in .env');
+    }
 	}
-
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search)
 		const accessToken = params.get('access_token')
