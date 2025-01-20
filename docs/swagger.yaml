@@ -1,0 +1,91 @@
+definitions:
+  response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  response.TokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновление токена доступа с помощью refresh_token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление токена доступа
+          schema:
+            $ref: '#/definitions/response.TokenResponse'
+        "400":
+          description: Ошибка получения refresh_token из куки
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Неверный refresh_token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка генерации токенов
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Обновление токена доступа
+      tags:
+      - auth
+  /auth/steam:
+    get:
+      consumes:
+      - application/json
+      description: Авторизация через Steam и получение токенов доступа (для теста
+        требуется подключение в steam хоста с https)
+      produces:
+      - application/json
+      responses:
+        "303":
+          description: Redirect URL
+          schema:
+            type: string
+        "400":
+          description: Ошибка начала авторизации Steam
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Авторизация через Steam
+      tags:
+      - auth
+  /auth/steam/callback:
+    get:
+      consumes:
+      - application/json
+      description: Обработчик коллбэка после авторизации через Steam и получение токенов
+        доступа
+      produces:
+      - application/json
+      responses:
+        "303":
+          description: Ссылка с указанием токенов доступа
+          schema:
+            type: string
+        "400":
+          description: Ошибка авторизации Steam
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Ошибка генерации токенов" "Ошибка входа в систему
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Обработчик коллбэка после авторизации через Steam
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

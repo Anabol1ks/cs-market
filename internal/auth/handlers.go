@@ -26,6 +26,15 @@ func InitAuth() {
 	)
 }
 
+// SteamLoginHandler godoc
+// @Summary Авторизация через Steam
+// @Description Авторизация через Steam и получение токенов доступа (для теста требуется подключение в steam хоста с https)
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 303 {string} string "Redirect URL"
+// @Failure 400 {object} response.ErrorResponse "Ошибка начала авторизации Steam"
+// @Router /auth/steam [get]
 func SteamLoginHandler(c *gin.Context) {
 	provider, err := goth.GetProvider("steam")
 	if err != nil {
@@ -48,6 +57,16 @@ func SteamLoginHandler(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, authURL)
 }
 
+// SteamCallbackHandler godoc
+// @Summary Обработчик коллбэка после авторизации через Steam
+// @Description Обработчик коллбэка после авторизации через Steam и получение токенов доступа
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 303 {string} string "Ссылка с указанием токенов доступа"
+// @Failure 400 {object} response.ErrorResponse "Ошибка авторизации Steam"
+// @Failure 500 {object} response.ErrorResponse "Ошибка генерации токенов" "Ошибка входа в систему"
+// @Router /auth/steam/callback [get]
 func SteamCallbackHandler(c *gin.Context) {
 	provider, err := goth.GetProvider("steam")
 	if err != nil {
@@ -145,6 +164,17 @@ func ValidToken(tokenStr string) (jwt.MapClaims, error) {
 	return nil, fmt.Errorf("invalid token")
 }
 
+// RefreshTokenHandler godoc
+// @Summary Обновление токена доступа
+// @Description Обновление токена доступа с помощью refresh_token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.TokenResponse "Успешное обновление токена доступа"
+// @Failure 400 {object} response.ErrorResponse "Ошибка получения refresh_token из куки"
+// @Failure 401 {object} response.ErrorResponse "Неверный refresh_token"
+// @Failure 500 {object} response.ErrorResponse "Ошибка генерации токенов"
+// @Router /auth/refresh [post]
 func RefreshTokenHandler(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
