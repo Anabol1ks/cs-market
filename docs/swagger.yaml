@@ -9,6 +9,15 @@ definitions:
       access_token:
         type: string
     type: object
+  response.UserResponse:
+    properties:
+      avatarurl:
+        type: string
+      steam_id:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -83,6 +92,48 @@ paths:
       summary: Обработчик коллбэка после авторизации через Steam
       tags:
       - auth
+  /auth/verify:
+    get:
+      consumes:
+      - application/json
+      description: Проверка токена доступа
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Токен доступа действителен
+          schema:
+            $ref: '#/definitions/response.TokenResponse'
+        "401":
+          description: Невалидный токен
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Проверка токена доступа
+      tags:
+      - auth
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: Получение информации о своём профиле пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о профиле
+          schema:
+            $ref: '#/definitions/response.UserResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение профиля пользователя
+      tags:
+      - users
 securityDefinitions:
   BearerAuth:
     in: header

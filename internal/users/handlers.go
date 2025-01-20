@@ -14,7 +14,7 @@ import (
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} User "Информация о профиле"
+// @Success 200 {object} response.UserResponse "Информация о профиле"
 // @Failure 404 {object} response.ErrorResponse "Пользователь не найден"
 // @Router /profile [get]
 func GetUserProfileHandler(c *gin.Context) {

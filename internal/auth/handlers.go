@@ -124,7 +124,7 @@ var jwtSecretRefresh = []byte(os.Getenv("JWT_KEY_REFRESH"))
 func GenerateTokensJWT(stramID string) (string, string, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": stramID,
-		"exp":     time.Now().Add(15 * time.Minute).Unix(),
+		"exp":     time.Now().Add(1 * time.Minute).Unix(),
 	})
 
 	accessTokenString, err := accessToken.SignedString(jwtSecret)
@@ -208,6 +208,16 @@ func TokenProv(c *gin.Context) {
 	})
 }
 
+// @Security BearerAuth
+// VerifyTokenHandler godoc
+// @Summary Проверка токена доступа
+// @Description Проверка токена доступа
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.TokenResponse "Токен доступа действителен"
+// @Failure 401 {object} response.ErrorResponse "Невалидный токен"
+// @Router /auth/verify [get]
 func VerifyTokenHandler(c *gin.Context) {
 	userID := c.GetString("user_id")
 	if userID == "" {
