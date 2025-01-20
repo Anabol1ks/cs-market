@@ -46,7 +46,13 @@ func main() {
 
 	r.GET("/auth/steam", auth.SteamLoginHandler)
 	r.GET("/auth/steam/callback", auth.SteamCallbackHandler)
+	r.POST("/auth/refresh", auth.RefreshTokenHandler)
 
+	authorized := r.Group("/")
+	{
+		authorized.Use(auth.AuthMiddleware())
+		authorized.GET("/authMud", auth.TokenProv)
+	}
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal("Ошибка запуска сервера:", err)
 	}
