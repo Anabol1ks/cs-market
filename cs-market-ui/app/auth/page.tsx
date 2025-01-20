@@ -1,16 +1,34 @@
-'use client';
+'use client'
 
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Stamp as Steam, UserCircle2 } from 'lucide-react';
-import Image from 'next/image';
+import { useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Stamp as Steam, UserCircle2 } from 'lucide-react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation' // Правильный импорт
+import Coockies from 'js-cookie'
+
 
 export default function AuthPage() {
-  const handleSteamLogin = () => {
-		window.location.href = 'http://localhost:8080/auth/steam'
+	const router = useRouter()
+
+	const handleSteamLogin = () => {
+		window.location.href = process.env+'/auth/steam'
 	}
 
-  return (
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search)
+		const accessToken = params.get('access_token')
+		const refreshToken = params.get('refresh_token')
+
+		if (accessToken && refreshToken) {
+			Coockies.set('access_token', accessToken)
+			Coockies.set('refresh_token', refreshToken)
+			router.replace('/') // Перенаправление на защищённую страницу
+		}
+	}, [router])
+
+	return (
 		<div className='min-h-[80vh] flex items-center justify-center'>
 			<Card className='w-full max-w-md p-6 space-y-6'>
 				<div className='text-center space-y-2'>
