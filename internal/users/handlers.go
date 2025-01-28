@@ -21,7 +21,7 @@ func GetUserProfileHandler(c *gin.Context) {
 	userID := c.GetString("user_id")
 
 	var user User
-	if err := storage.DB.First(&user, userID).Error; err != nil {
+	if err := storage.DB.Where("steam_id = ?", userID).First(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Пользователь не найден"})
 		return
 	}
