@@ -3,7 +3,10 @@ package auth
 import (
 	"cs-market/internal/storage"
 	"cs-market/internal/users"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +16,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/providers/steam"
+	"gorm.io/gorm"
 )
 
 func InitAuth() {
@@ -92,16 +96,36 @@ func SteamCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	user := users.User{
-		SteamID:   steamUser.UserID,
-		Username:  steamUser.NickName,
-		AvatarURL: steamUser.AvatarURL,
+	steamLvl, err := GetUserSteamLVL(steamUser.UserID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка получения данных Steam"})
+		log.Println(err)
+		return
 	}
 
-	result := storage.DB.Where(users.User{SteamID: steamUser.UserID}).FirstOrCreate(&user)
+	var user users.User
+	result := storage.DB.Where("steam_id = ?", steamUser.UserID).First(&user)
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка входа в систему"})
-		return
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// Создание нового пользователя, если его нет
+			user = users.User{
+				SteamID:   steamUser.UserID,
+				Username:  steamUser.NickName,
+				AvatarURL: steamUser.AvatarURL,
+				SteamLVL:  steamLvl,
+			}
+			storage.DB.Create(&user)
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка входа в систему"})
+			return
+		}
+	} else {
+		// Обновление данных пользователя при повторном входе
+		storage.DB.Model(&user).Updates(users.User{
+			Username:  steamUser.NickName,
+			AvatarURL: steamUser.AvatarURL,
+			SteamLVL:  steamLvl,
+		})
 	}
 
 	accessToken, refreshToken, err := GenerateTokensJWT(user.SteamID)
@@ -226,4 +250,34 @@ func VerifyTokenHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"valid": true, "user_id": userID})
+}
+
+func GetUserSteamLVL(steam_id string) (int, error) {
+	url := fmt.Sprintf("http://api.steampowered.com/IPlayerService/GetSteamLevel/v1/?key=%s&steamid=%s", os.Getenv("STEAM_API_KEY"), steam_id)
+	log.Println(url)
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("Ошибка при выполнении запроса:", err)
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Ошибка при чтении ответа:", err)
+		return 0, err
+	}
+
+	var result struct {
+		Response struct {
+			PlayerLevel int `json:"player_level"`
+		} `json:"response"`
+	}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		fmt.Println("Ошибка при декодировании JSON:", err)
+		return 0, err
+	}
+
+	return result.Response.PlayerLevel, nil
 }
