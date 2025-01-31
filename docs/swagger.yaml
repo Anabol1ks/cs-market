@@ -4,6 +4,11 @@ definitions:
       error:
         type: string
     type: object
+  response.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
   response.TokenResponse:
     properties:
       access_token:
@@ -132,6 +137,27 @@ paths:
       security:
       - BearerAuth: []
       summary: Получение профиля пользователя
+      tags:
+      - users
+  /profile/inventory:
+    get:
+      consumes:
+      - application/json
+      description: Получение инвентаря пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация об инвентаре
+          schema:
+            $ref: '#/definitions/response.SuccessResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получение инвентаря пользователя
       tags:
       - users
 securityDefinitions:

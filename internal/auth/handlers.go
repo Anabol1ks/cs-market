@@ -125,7 +125,7 @@ func GenerateTokensJWT(stramID string) (string, string, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": stramID,
 		// "exp":     time.Now().Add(15 * time.Minute).Unix(),
-		"exp": time.Now().Add(72 * time.Hour).Unix(),
+		"exp": time.Now().Add(300 * time.Hour).Unix(),
 	})
 
 	accessTokenString, err := accessToken.SignedString(jwtSecret)

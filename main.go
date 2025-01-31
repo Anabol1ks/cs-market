@@ -3,6 +3,7 @@ package main
 import (
 	_ "cs-market/docs"
 	"cs-market/internal/auth"
+	"cs-market/internal/inventory"
 	"cs-market/internal/storage"
 	"cs-market/internal/users"
 	"log"
@@ -62,6 +63,7 @@ func main() {
 		authorized.Use(auth.AuthMiddleware())
 		authorized.GET("/authMud", auth.TokenProv)
 		authorized.GET("/profile", users.GetUserProfileHandler)
+		authorized.GET("/profile/inventory", inventory.GetMyInventoryHandler)
 	}
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal("Ошибка запуска сервера:", err)
