@@ -35,7 +35,9 @@ func main() {
 
 	storage.ConnectDatabase()
 
-	err := storage.DB.AutoMigrate(&users.User{})
+	inventory.StartPriceUpdater(storage.DB)
+
+	err := storage.DB.AutoMigrate(&users.User{}, &inventory.Skin{})
 	if err != nil {
 		log.Fatal("Ошибка миграции: ", err)
 	}
@@ -68,4 +70,5 @@ func main() {
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal("Ошибка запуска сервера:", err)
 	}
+
 }
